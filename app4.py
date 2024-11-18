@@ -1,108 +1,73 @@
 import streamlit as st
 import pandas as pd
-from datetime import datetime, timedelta
 
-# Inicialización de variables y almacenamiento de datos
-if 'finanzas' not in st.session_state:
-    st.session_state['finanzas'] = {
-        'ingresos': pd.DataFrame(columns=["Fecha", "Categoría", "Monto"]),
-        'gastos': pd.DataFrame(columns=["Fecha", "Categoría", "Monto"]),
-        'presupuestos': pd.DataFrame(columns=["Mes", "Categoría", "Monto"]),
-        'metas_ahorro': pd.DataFrame(columns=["Mes", "Meta de ahorro", "Monto"])
-    }
+# Función para calcular el PAPA global y por tipología
+def calcular_papa(df):
+    # PAPA Global
+    suma_ponderada = (df["Calificación"] * df["Créditos"]).sum()
+    suma_creditos = df["Créditos"].sum()
+    papa_global = suma_ponderada / suma_creditos if suma_creditos != 0 else 0
 
-# Títulos y descripción
-st.title("App de Finanzas Personales")
-st.write("Registra tus ingresos, gastos, presupuestos y metas de ahorro. Esta aplicación generará reportes semanales y mensuales.")
+    # PAPA por tipología
+    papa_por_tipologia = df.groupby("Tipología").apply(
+        lambda x: (x["Calificación"] * x["Créditos"]).sum() / x["Créditos"].sum() if x["Créditos"].sum() != 0 else 0
+    ).reset_index(name="PAPA")
 
-# Menú de navegación
-opcion = st.sidebar.radio("Selecciona una opción", ["Registrar Datos", "Ver Reportes"])
+    return papa_global, papa_por_tipologia
 
-# Función para registrar ingresos, gastos, presupuestos y metas de ahorro
-def registrar_datos():
-    tipo = st.selectbox("¿Qué deseas registrar?", ["Ingreso", "Gasto", "Presupuesto", "Meta de Ahorro"])
+# Título y descripción de la app
+st.title("Cálculo de PAPA (Promedio Acumulado de Ponderación Académica)")
+st.write("""
+Esta aplicación permite calcular el PAPA global y por tipología de asignatura. 
+Para cada asignatura, ingresa su calificación, los créditos y su tipología (teórica, práctica, etc.).
+""")
 
-    if tipo == "Ingreso":
-        fecha = st.date_input("Fecha", datetime.today())
-        categoria = st.text_input("Categoría (Ej. Sueldo, Freelance, etc.)")
-        monto = st.number_input("Monto", min_value=0.0, format="%.2f")
-        if st.button("Registrar Ingreso"):
-            st.session_state['finanzas']['ingresos'] = pd.concat([
-                st.session_state['finanzas']['ingresos'],
-                pd.DataFrame([[fecha, categoria, monto]], columns=["Fecha", "Categoría", "Monto"])
-            ], ignore_index=True)
-            st.success("Ingreso registrado exitosamente.")
-    
-    elif tipo == "Gasto":
-        fecha = st.date_input("Fecha", datetime.today())
-        categoria = st.text_input("Categoría (Ej. Alquiler, Alimentación, etc.)")
-        monto = st.number_input("Monto", min_value=0.0, format="%.2f")
-        if st.button("Registrar Gasto"):
-            st.session_state['finanzas']['gastos'] = pd.concat([
-                st.session_state['finanzas']['gastos'],
-                pd.DataFrame([[fecha, categoria, monto]], columns=["Fecha", "Categoría", "Monto"])
-            ], ignore_index=True)
-            st.success("Gasto registrado exitosamente.")
-    
-    elif tipo == "Presupuesto":
-        mes = st.selectbox("Selecciona el mes", ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"])
-        categoria = st.text_input("Categoría (Ej. Alimentación, Transporte, etc.)")
-        monto = st.number_input("Monto Presupuestado", min_value=0.0, format="%.2f")
-        if st.button("Registrar Presupuesto"):
-            st.session_state['finanzas']['presupuestos'] = pd.concat([
-                st.session_state['finanzas']['presupuestos'],
-                pd.DataFrame([[mes, categoria, monto]], columns=["Mes", "Categoría", "Monto"])
-            ], ignore_index=True)
-            st.success("Presupuesto registrado exitosamente.")
-    
-    elif tipo == "Meta de Ahorro":
-        mes = st.selectbox("Selecciona el mes", ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"])
-        monto = st.number_input("Monto Meta de Ahorro", min_value=0.0, format="%.2f")
-        if st.button("Registrar Meta de Ahorro"):
-            st.session_state['finanzas']['metas_ahorro'] = pd.concat([
-                st.session_state['finanzas']['metas_ahorro'],
-                pd.DataFrame([[mes, monto]], columns=["Mes", "Meta de ahorro", "Monto"])
-            ], ignore_index=True)
-            st.success("Meta de Ahorro registrada exitosamente.")
+# Inicialización del DataFrame en el estado de sesión
+if 'asignaturas' not in st.session_state:
+    st.session_state['asignaturas'] = pd.DataFrame(columns=["Asignatura", "Calificación", "Créditos", "Tipología"])
 
-# Función para generar los reportes
-def generar_reportes():
-    # Reporte semanal y mensual
-    st.subheader("Reportes de Finanzas")
+# Función para registrar asignaturas
+def registrar_asignatura():
+    # Campos de entrada
+    asignatura = st.text_input("Nombre de la asignatura")
+    calificacion = st.number_input("Calificación (0-10)", min_value=0.0, max_value=10.0, step=0.1)
+    creditos = st.number_input("Créditos", min_value=1, step=1)
+    tipologia = st.selectbox("Tipología de asignatura", ["Teórica", "Práctica", "Optativa", "Obligatoria"])
     
-    # Filtrar datos por fecha
-    fecha_hoy = datetime.today()
-    semana_inicio = fecha_hoy - timedelta(days=fecha_hoy.weekday())  # Lunes de esta semana
-    semana_fin = semana_inicio + timedelta(days=6)  # Domingo de esta semana
-    
-    # Filtrar datos semanales
-    ingresos_semanales = st.session_state['finanzas']['ingresos'][st.session_state['finanzas']['ingresos']["Fecha"].between(semana_inicio, semana_fin)]
-    gastos_semanales = st.session_state['finanzas']['gastos'][st.session_state['finanzas']['gastos']["Fecha"].between(semana_inicio, semana_fin)]
-    
-    # Reporte mensual
-    mes_actual = fecha_hoy.strftime("%B")
-    ingresos_mensuales = st.session_state['finanzas']['ingresos'][st.session_state['finanzas']['ingresos']["Fecha"].dt.month == fecha_hoy.month]
-    gastos_mensuales = st.session_state['finanzas']['gastos'][st.session_state['finanzas']['gastos']["Fecha"].dt.month == fecha_hoy.month]
-    
-    # Calcular el total de ingresos y gastos
-    total_ingresos_semanales = ingresos_semanales["Monto"].sum()
-    total_gastos_semanales = gastos_semanales["Monto"].sum()
-    total_ingresos_mensuales = ingresos_mensuales["Monto"].sum()
-    total_gastos_mensuales = gastos_mensuales["Monto"].sum()
-    
-    # Mostrar reportes semanales y mensuales
-    st.write("### Reporte Semanal")
-    st.write(f"Total Ingresos: ${total_ingresos_semanales:.2f}")
-    st.write(f"Total Gastos: ${total_gastos_semanales:.2f}")
-    st.write(f"Diferencia: ${total_ingresos_semanales - total_gastos_semanales:.2f}")
-    
-    st.write("### Reporte Mensual")
-    st.write(f"Total Ingresos: ${total_ingresos_mensuales:.2f}")
-    st.write(f"Total Gastos: ${total_gastos_mensuales:.2f}")
-    st.write(f"Diferencia: ${total_ingresos_mensuales - total_gastos_mensuales:.2f}")
+    if st.button("Registrar Asignatura"):
+        # Registrar la asignatura en el DataFrame
+        nueva_asignatura = pd.DataFrame([[asignatura, calificacion, creditos, tipologia]],
+                                        columns=["Asignatura", "Calificación", "Créditos", "Tipología"])
+        st.session_state['asignaturas'] = pd.concat([st.session_state['asignaturas'], nueva_asignatura], ignore_index=True)
+        st.success(f"Asignatura {asignatura} registrada correctamente!")
 
-# Ejecución según la opción seleccionada
-if opcion == "Registrar Datos":
-    registrar_datos()
+# Mostrar las asignaturas registradas
+def mostrar_asignaturas():
+    st.write("### Asignaturas Registradas")
+    st.dataframe(st.session_state['asignaturas'])
+
+# Cálculo y visualización del PAPA
+def mostrar_reportes():
+    if len(st.session_state['asignaturas']) == 0:
+        st.write("Aún no se han registrado asignaturas. Por favor, ingrese al menos una asignatura para calcular el PAPA.")
+        return
+
+    # Calcular el PAPA global y por tipología
+    papa_global, papa_por_tipologia = calcular_papa(st.session_state['asignaturas'])
+
+    # Mostrar el PAPA global
+    st.write(f"### PAPA Global: {papa_global:.2f}")
+
+    # Mostrar el PAPA por tipología
+    st.write("### PAPA por Tipología de Asignatura")
+    st.dataframe(papa_por_tipologia)
+
+# Menú lateral para elegir la funcionalidad
+opcion = st.sidebar.radio("Selecciona una opción", ["Registrar Asignaturas", "Ver Reportes"])
+
+# Lógica de la app
+if opcion == "Registrar Asignaturas":
+    registrar_asignatura()
+    mostrar_asignaturas()
 elif opcion == "Ver Reportes":
-    generar_reportes()
+    mostrar_reportes()
