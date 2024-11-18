@@ -1,108 +1,41 @@
 import streamlit as st
 import pandas as pd
-from datetime import datetime, timedelta
 
-# Inicialización de variables y almacenamiento de datos
+# Simulación de datos de ejemplo en pandas para fines demostrativos
+data = {
+    'Fecha': ['2024-11-01', '2024-11-02', '2024-11-07', '2024-11-10', '2024-11-15'],
+    'Ingreso': [200, 300, 150, 400, 250],
+    'Gasto': [50, 100, 80, 120, 90]
+}
+
+# Crear el DataFrame
+finanzas_df = pd.DataFrame(data)
+
+# Convertir la columna 'Fecha' a datetime
+finanzas_df['Fecha'] = pd.to_datetime(finanzas_df['Fecha'])
+
+# Almacenamos el DataFrame en el estado de la sesión para fines de ejemplo
 if 'finanzas' not in st.session_state:
-    st.session_state['finanzas'] = {
-        'ingresos': pd.DataFrame(columns=["Fecha", "Categoría", "Monto"]),
-        'gastos': pd.DataFrame(columns=["Fecha", "Categoría", "Monto"]),
-        'presupuestos': pd.DataFrame(columns=["Mes", "Categoría", "Monto"]),
-        'metas_ahorro': pd.DataFrame(columns=["Mes", "Meta de ahorro", "Monto"])
-    }
+    st.session_state['finanzas'] = {'ingresos': finanzas_df}
 
-# Títulos y descripción
-st.title("App de Finanzas Personales")
-st.write("Registra tus ingresos, gastos, presupuestos y metas de ahorro. Esta aplicación generará reportes semanales y mensuales.")
+# Solicitar al usuario las fechas de inicio y fin para el reporte
+semana_inicio = st.date_input("Fecha de inicio de la semana")
+semana_fin = st.date_input("Fecha de fin de la semana")
 
-# Menú de navegación
-opcion = st.sidebar.radio("Selecciona una opción", ["Registrar Datos", "Ver Reportes"])
+# Asegúrate de que las fechas de inicio y fin sean del tipo correcto
+semana_inicio = pd.to_datetime(semana_inicio)
+semana_fin = pd.to_datetime(semana_fin)
 
-# Función para registrar ingresos, gastos, presupuestos y metas de ahorro
-def registrar_datos():
-    tipo = st.selectbox("¿Qué deseas registrar?", ["Ingreso", "Gasto", "Presupuesto", "Meta de Ahorro"])
-
-    if tipo == "Ingreso":
-        fecha = st.date_input("Fecha", datetime.today())
-        categoria = st.text_input("Categoría (Ej. Sueldo, Freelance, etc.)")
-        monto = st.number_input("Monto", min_value=0.0, format="%.2f")
-        if st.button("Registrar Ingreso"):
-            st.session_state['finanzas']['ingresos'] = pd.concat([
-                st.session_state['finanzas']['ingresos'],
-                pd.DataFrame([[fecha, categoria, monto]], columns=["Fecha", "Categoría", "Monto"])
-            ], ignore_index=True)
-            st.success("Ingreso registrado exitosamente.")
-    
-    elif tipo == "Gasto":
-        fecha = st.date_input("Fecha", datetime.today())
-        categoria = st.text_input("Categoría (Ej. Alquiler, Alimentación, etc.)")
-        monto = st.number_input("Monto", min_value=0.0, format="%.2f")
-        if st.button("Registrar Gasto"):
-            st.session_state['finanzas']['gastos'] = pd.concat([
-                st.session_state['finanzas']['gastos'],
-                pd.DataFrame([[fecha, categoria, monto]], columns=["Fecha", "Categoría", "Monto"])
-            ], ignore_index=True)
-            st.success("Gasto registrado exitosamente.")
-    
-    elif tipo == "Presupuesto":
-        mes = st.selectbox("Selecciona el mes", ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"])
-        categoria = st.text_input("Categoría (Ej. Alimentación, Transporte, etc.)")
-        monto = st.number_input("Monto Presupuestado", min_value=0.0, format="%.2f")
-        if st.button("Registrar Presupuesto"):
-            st.session_state['finanzas']['presupuestos'] = pd.concat([
-                st.session_state['finanzas']['presupuestos'],
-                pd.DataFrame([[mes, categoria, monto]], columns=["Mes", "Categoría", "Monto"])
-            ], ignore_index=True)
-            st.success("Presupuesto registrado exitosamente.")
-    
-    elif tipo == "Meta de Ahorro":
-        mes = st.selectbox("Selecciona el mes", ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"])
-        monto = st.number_input("Monto Meta de Ahorro", min_value=0.0, format="%.2f")
-        if st.button("Registrar Meta de Ahorro"):
-            st.session_state['finanzas']['metas_ahorro'] = pd.concat([
-                st.session_state['finanzas']['metas_ahorro'],
-                pd.DataFrame([[mes, monto]], columns=["Mes", "Meta de ahorro", "Monto"])
-            ], ignore_index=True)
-            st.success("Meta de Ahorro registrada exitosamente.")
-
-# Función para generar los reportes
+# Generar reportes de ingresos semanales
 def generar_reportes():
-    # Reporte semanal y mensual
-    st.subheader("Reportes de Finanzas")
-    
-    # Filtrar datos por fecha
-    fecha_hoy = datetime.today()
-    semana_inicio = fecha_hoy - timedelta(days=fecha_hoy.weekday())  # Lunes de esta semana
-    semana_fin = semana_inicio + timedelta(days=6)  # Domingo de esta semana
-    
-    # Filtrar datos semanales
+    # Filtrar los ingresos dentro del rango de fechas
     ingresos_semanales = st.session_state['finanzas']['ingresos'][st.session_state['finanzas']['ingresos']["Fecha"].between(semana_inicio, semana_fin)]
-    gastos_semanales = st.session_state['finanzas']['gastos'][st.session_state['finanzas']['gastos']["Fecha"].between(semana_inicio, semana_fin)]
-    
-    # Reporte mensual
-    mes_actual = fecha_hoy.strftime("%B")
-    ingresos_mensuales = st.session_state['finanzas']['ingresos'][st.session_state['finanzas']['ingresos']["Fecha"].dt.month == fecha_hoy.month]
-    gastos_mensuales = st.session_state['finanzas']['gastos'][st.session_state['finanzas']['gastos']["Fecha"].dt.month == fecha_hoy.month]
-    
-    # Calcular el total de ingresos y gastos
-    total_ingresos_semanales = ingresos_semanales["Monto"].sum()
-    total_gastos_semanales = gastos_semanales["Monto"].sum()
-    total_ingresos_mensuales = ingresos_mensuales["Monto"].sum()
-    total_gastos_mensuales = gastos_mensuales["Monto"].sum()
-    
-    # Mostrar reportes semanales y mensuales
-    st.write("### Reporte Semanal")
-    st.write(f"Total Ingresos: ${total_ingresos_semanales:.2f}")
-    st.write(f"Total Gastos: ${total_gastos_semanales:.2f}")
-    st.write(f"Diferencia: ${total_ingresos_semanales - total_gastos_semanales:.2f}")
-    
-    st.write("### Reporte Mensual")
-    st.write(f"Total Ingresos: ${total_ingresos_mensuales:.2f}")
-    st.write(f"Total Gastos: ${total_gastos_mensuales:.2f}")
-    st.write(f"Diferencia: ${total_ingresos_mensuales - total_gastos_mensuales:.2f}")
 
-# Ejecución según la opción seleccionada
-if opcion == "Registrar Datos":
-    registrar_datos()
-elif opcion == "Ver Reportes":
+    # Calcular el total de los ingresos dentro del rango
+    total_ingresos = ingresos_semanales['Ingreso'].sum()
+
+    st.write(f"Total de ingresos entre {semana_inicio.date()} y {semana_fin.date()}: {total_ingresos}")
+
+# Botón para generar el reporte
+if st.button("Generar reporte semanal"):
     generar_reportes()
