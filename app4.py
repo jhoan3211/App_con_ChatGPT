@@ -30,7 +30,7 @@ if 'asignaturas' not in st.session_state:
 def registrar_asignatura():
     # Campos de entrada
     asignatura = st.text_input("Nombre de la asignatura")
-    calificacion = st.number_input("Calificación (0-10)", min_value=0.0, max_value=10.0, step=0.1)
+    calificacion = st.number_input("Calificación (0-5)", min_value=0.0, max_value=5.0, step=0.1)
     creditos = st.number_input("Créditos", min_value=1, step=1)
     tipologia = st.selectbox("Afecta el PAPA?", ["Si", "No"])
     
