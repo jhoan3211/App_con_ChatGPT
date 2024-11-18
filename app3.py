@@ -3,7 +3,7 @@ import pandas as pd
 import datetime
 
 # Configuración inicial
-st.set_page_config(page_title="Finanzas Personales", layout="wide")
+st.set_page_config(page_title="Finanzas Personales por Jhoan Ramirez", layout="wide")
 
 # Inicialización de datos en session_state
 if "transactions" not in st.session_state:
