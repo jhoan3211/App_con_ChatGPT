@@ -16,7 +16,7 @@ def calcular_papa(df):
     return papa_global, papa_por_tipologia
 
 # Título y descripción de la app
-st.title("Cálculo de PAPA (Promedio Acumulado de Ponderación Académica)")
+st.title("Cálculo de PAPA (Promedio Acumulado de Ponderación Académica) por Jhoan Ramirez")
 st.write("""
 Esta aplicación permite calcular el PAPA global y si afecta o no. 
 
