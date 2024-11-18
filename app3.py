@@ -41,17 +41,24 @@ def generate_report(period="Mensual"):
     transactions = st.session_state["transactions"]
     budgets = st.session_state["budgets"]
 
+    # Asegurarse de que la columna 'Fecha' sea de tipo datetime
+    if not transactions.empty:
+        transactions["Fecha"] = pd.to_datetime(transactions["Fecha"], errors="coerce")
+
     # Filtro de fecha según el período
     today = datetime.date.today()
     if period == "Semanal":
         start_date = today - datetime.timedelta(days=7)
     else:  # Mensual
         start_date = today.replace(day=1)
-    
-    filtered_transactions = transactions[transactions["Fecha"] >= str(start_date)]
+
+    # Filtrar transacciones por fecha
+    filtered_transactions = transactions[transactions["Fecha"] >= pd.Timestamp(start_date)]
 
     # Sumar ingresos y gastos por categoría
     summary = filtered_transactions.groupby(["Tipo", "Categoría"])["Monto"].sum().reset_index()
+
+    # Comparar con presupuestos
     budget_summary = budgets.merge(summary[summary["Tipo"] == "Gasto"], on="Categoría", how="left")
     budget_summary["Monto"].fillna(0, inplace=True)
     budget_summary["Diferencia"] = budget_summary["Presupuesto Mensual"] - budget_summary["Monto"]
