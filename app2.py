@@ -130,58 +130,105 @@ categoria = st.selectbox(
     ("Temperatura", "Longitud", "Peso/Masa", "Volumen", "Tiempo", "Velocidad", "Área", "Energía", "Presión", "Tamaño de datos")
 )
 
+# Procesamiento según la categoría seleccionada
 if categoria == "Temperatura":
     tipo_conversion = st.selectbox(
         "Selecciona el tipo de conversión:",
         ("Celsius a Fahrenheit", "Fahrenheit a Celsius", "Celsius a Kelvin", "Kelvin a Celsius")
     )
-    valor = st.number_input("Ingresa el valor a convertir:", type=float)
+    valor = st.text_input("Ingresa el valor a convertir:")
     
-    if tipo_conversion == "Celsius a Fahrenheit":
-        resultado = celsius_a_fahrenheit(valor)
-    elif tipo_conversion == "Fahrenheit a Celsius":
-        resultado = fahrenheit_a_celsius(valor)
-    elif tipo_conversion == "Celsius a Kelvin":
-        resultado = celsius_a_kelvin(valor)
-    else:
-        resultado = kelvin_a_celsius(valor)
-    
-    st.write(f"El resultado es: {resultado}")
+    if valor:
+        valor = float(valor)  # Asegurarse de que el valor sea un número
+        
+        if tipo_conversion == "Celsius a Fahrenheit":
+            resultado = celsius_a_fahrenheit(valor)
+        elif tipo_conversion == "Fahrenheit a Celsius":
+            resultado = fahrenheit_a_celsius(valor)
+        elif tipo_conversion == "Celsius a Kelvin":
+            resultado = celsius_a_kelvin(valor)
+        else:
+            resultado = kelvin_a_celsius(valor)
+        
+        st.write(f"El resultado es: {resultado}")
 
 elif categoria == "Longitud":
     tipo_conversion = st.selectbox(
         "Selecciona el tipo de conversión:",
         ("Pies a metros", "Metros a pies", "Pulgadas a centímetros", "Centímetros a pulgadas")
     )
-    valor = st.number_input("Ingresa el valor a convertir:", type=float)
+    valor = st.text_input("Ingresa el valor a convertir:")
     
-    if tipo_conversion == "Pies a metros":
-        resultado = pies_a_metros(valor)
-    elif tipo_conversion == "Metros a pies":
-        resultado = metros_a_pies(valor)
-    elif tipo_conversion == "Pulgadas a centímetros":
-        resultado = pulgadas_a_centimetros(valor)
-    else:
-        resultado = centimetros_a_pulgadas(valor)
-    
-    st.write(f"El resultado es: {resultado}")
+    if valor:
+        valor = float(valor)  # Asegurarse de que el valor sea un número
+        
+        if tipo_conversion == "Pies a metros":
+            resultado = pies_a_metros(valor)
+        elif tipo_conversion == "Metros a pies":
+            resultado = metros_a_pies(valor)
+        elif tipo_conversion == "Pulgadas a centímetros":
+            resultado = pulgadas_a_centimetros(valor)
+        else:
+            resultado = centimetros_a_pulgadas(valor)
+        
+        st.write(f"El resultado es: {resultado}")
 
 elif categoria == "Peso/Masa":
     tipo_conversion = st.selectbox(
         "Selecciona el tipo de conversión:",
         ("Libras a kilogramos", "Kilogramos a libras", "Onzas a gramos", "Gramos a onzas")
     )
-    valor = st.number_input("Ingresa el valor a convertir:", type=float)
+    valor = st.text_input("Ingresa el valor a convertir:")
     
-    if tipo_conversion == "Libras a kilogramos":
-        resultado = libras_a_kilogramos(valor)
-    elif tipo_conversion == "Kilogramos a libras":
-        resultado = kilogramos_a_libras(valor)
-    elif tipo_conversion == "Onzas a gramos":
-        resultado = onzas_a_gramos(valor)
-    else:
-        resultado = gramos_a_onzas(valor)
-    
-    st.write(f"El resultado es: {resultado}")
+    if valor:
+        valor = float(valor)  # Asegurarse de que el valor sea un número
+        
+        if tipo_conversion == "Libras a kilogramos":
+            resultado = libras_a_kilogramos(valor)
+        elif tipo_conversion == "Kilogramos a libras":
+            resultado = kilogramos_a_libras(valor)
+        elif tipo_conversion == "Onzas a gramos":
+            resultado = onzas_a_gramos(valor)
+        else:
+            resultado = gramos_a_onzas(valor)
+        
+        st.write(f"El resultado es: {resultado}")
 
-# Repetir la estructura anterior para cada categoría...
+elif categoria == "Volumen":
+    tipo_conversion = st.selectbox(
+        "Selecciona el tipo de conversión:",
+        ("Galones a litros", "Litros a galones", "Pulgadas cúbicas a centímetros cúbicos", "Centímetros cúbicos a pulgadas cúbicas")
+    )
+    valor = st.text_input("Ingresa el valor a convertir:")
+    
+    if valor:
+        valor = float(valor)  # Asegurarse de que el valor sea un número
+        
+        if tipo_conversion == "Galones a litros":
+            resultado = galones_a_litros(valor)
+        elif tipo_conversion == "Litros a galones":
+            resultado = litros_a_galones(valor)
+        elif tipo_conversion == "Pulgadas cúbicas a centímetros cúbicos":
+            resultado = pulgadas_cubicas_a_centimetros_cubicos(valor)
+        else:
+            resultado = centimetros_cubicos_a_pulgadas_cubicas(valor)
+        
+        st.write(f"El resultado es: {resultado}")
+
+elif categoria == "Tiempo":
+    tipo_conversion = st.selectbox(
+        "Selecciona el tipo de conversión:",
+        ("Horas a minutos", "Minutos a segundos", "Días a horas", "Semanas a días")
+    )
+    valor = st.text_input("Ingresa el valor a convertir:")
+    
+    if valor:
+        valor = float(valor)  # Asegurarse de que el valor sea un número
+        
+        if tipo_conversion == "Horas a minutos":
+            resultado = horas_a_minutos(valor)
+        elif tipo_conversion == "Minutos a segundos":
+            resultado = minutos_a_segundos(valor)
+        elif tipo_conversion == "Días a horas":
+            resultado = dias_a_horas(valor)
+       
