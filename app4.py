@@ -32,7 +32,7 @@ def registrar_asignatura():
     asignatura = st.text_input("Nombre de la asignatura")
     calificacion = st.number_input("Calificación (0-10)", min_value=0.0, max_value=10.0, step=0.1)
     creditos = st.number_input("Créditos", min_value=1, step=1)
-    tipologia = st.selectbox("Tipología de asignatura", ["Teórica", "Práctica", "Optativa", "Obligatoria"])
+    tipologia = st.selectbox("Tipología de asignatura", ["Afecta", "No afecta"])
     
     if st.button("Registrar Asignatura"):
         # Registrar la asignatura en el DataFrame
