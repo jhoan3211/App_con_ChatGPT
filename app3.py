@@ -5,36 +5,41 @@ import datetime
 # Configuración inicial
 st.set_page_config(page_title="Finanzas Personales", layout="wide")
 
-# Función para inicializar datos
-@st.cache_data
-def initialize_data():
-    return {
-        "transactions": pd.DataFrame(columns=["Fecha", "Tipo", "Categoría", "Monto"]),
-        "budgets": pd.DataFrame(columns=["Categoría", "Presupuesto Mensual"]),
-        "savings_goals": pd.DataFrame(columns=["Meta", "Monto", "Progreso"]),
-    }
+# Inicialización de datos en session_state
+if "transactions" not in st.session_state:
+    st.session_state["transactions"] = pd.DataFrame(columns=["Fecha", "Tipo", "Categoría", "Monto"])
+if "budgets" not in st.session_state:
+    st.session_state["budgets"] = pd.DataFrame(columns=["Categoría", "Presupuesto Mensual"])
+if "savings_goals" not in st.session_state:
+    st.session_state["savings_goals"] = pd.DataFrame(columns=["Meta", "Monto", "Progreso"])
 
 # Función para agregar una transacción
-def add_transaction(data, fecha, tipo, categoria, monto):
+def add_transaction(fecha, tipo, categoria, monto):
     new_transaction = {"Fecha": fecha, "Tipo": tipo, "Categoría": categoria, "Monto": monto}
-    data["transactions"] = pd.concat([data["transactions"], pd.DataFrame([new_transaction])], ignore_index=True)
-    return data
+    st.session_state["transactions"] = pd.concat(
+        [st.session_state["transactions"], pd.DataFrame([new_transaction])], ignore_index=True
+    )
 
 # Función para agregar o actualizar un presupuesto
-def add_budget(data, categoria, presupuesto):
-    budgets = data["budgets"]
+def add_budget(categoria, presupuesto):
+    budgets = st.session_state["budgets"]
     if categoria in budgets["Categoría"].values:
         budgets.loc[budgets["Categoría"] == categoria, "Presupuesto Mensual"] = presupuesto
     else:
         new_budget = {"Categoría": categoria, "Presupuesto Mensual": presupuesto}
-        budgets = pd.concat([budgets, pd.DataFrame([new_budget])], ignore_index=True)
-    data["budgets"] = budgets
-    return data
+        st.session_state["budgets"] = pd.concat([budgets, pd.DataFrame([new_budget])], ignore_index=True)
+
+# Función para agregar una meta de ahorro
+def add_savings_goal(meta, monto, progreso):
+    new_goal = {"Meta": meta, "Monto": monto, "Progreso": progreso}
+    st.session_state["savings_goals"] = pd.concat(
+        [st.session_state["savings_goals"], pd.DataFrame([new_goal])], ignore_index=True
+    )
 
 # Función para calcular reportes
-def generate_report(data, period="Mensual"):
-    transactions = data["transactions"]
-    budgets = data["budgets"]
+def generate_report(period="Mensual"):
+    transactions = st.session_state["transactions"]
+    budgets = st.session_state["budgets"]
 
     # Filtro de fecha según el período
     today = datetime.date.today()
@@ -53,9 +58,6 @@ def generate_report(data, period="Mensual"):
 
     return summary, budget_summary
 
-# Inicialización de datos
-data = initialize_data()
-
 # Interfaz de usuario
 st.title("Gestor de Finanzas Personales")
 st.sidebar.header("Opciones")
@@ -72,9 +74,9 @@ if option == "Registrar Transacción":
         monto = st.number_input("Monto", min_value=0.0, step=0.01)
         submitted = st.form_submit_button("Registrar")
         if submitted:
-            data = add_transaction(data, fecha, tipo, categoria, monto)
+            add_transaction(fecha, tipo, categoria, monto)
             st.success("Transacción registrada exitosamente.")
-            st.dataframe(data["transactions"])
+            st.dataframe(st.session_state["transactions"])
 
 elif option == "Definir Presupuesto":
     st.header("Definir Presupuesto")
@@ -83,9 +85,9 @@ elif option == "Definir Presupuesto":
         presupuesto = st.number_input("Presupuesto Mensual", min_value=0.0, step=0.01)
         submitted = st.form_submit_button("Guardar Presupuesto")
         if submitted:
-            data = add_budget(data, categoria, presupuesto)
+            add_budget(categoria, presupuesto)
             st.success("Presupuesto guardado exitosamente.")
-            st.dataframe(data["budgets"])
+            st.dataframe(st.session_state["budgets"])
 
 elif option == "Metas de Ahorro":
     st.header("Metas de Ahorro")
@@ -95,15 +97,14 @@ elif option == "Metas de Ahorro":
         progreso = st.number_input("Progreso Actual", min_value=0.0, step=0.01)
         submitted = st.form_submit_button("Guardar Meta")
         if submitted:
-            new_goal = {"Meta": meta, "Monto": monto, "Progreso": progreso}
-            data["savings_goals"] = pd.concat([data["savings_goals"], pd.DataFrame([new_goal])], ignore_index=True)
+            add_savings_goal(meta, monto, progreso)
             st.success("Meta de ahorro guardada exitosamente.")
-            st.dataframe(data["savings_goals"])
+            st.dataframe(st.session_state["savings_goals"])
 
 elif option == "Generar Reporte":
     st.header("Generar Reporte")
     periodo = st.selectbox("Período", ["Semanal", "Mensual"])
-    summary, budget_summary = generate_report(data, period=periodo)
+    summary, budget_summary = generate_report(period=periodo)
 
     st.subheader("Resumen de Transacciones")
     st.dataframe(summary)
@@ -117,3 +118,4 @@ elif option == "Generar Reporte":
         file_name=f"reporte_{periodo.lower()}.csv",
         mime="text/csv",
     )
+
