@@ -17,9 +17,9 @@ def calcular_papa(df):
     return papa_global, papa_por_tipologia
 
 # Título y descripción de la app
-st.title("Cálculo de PAPA (Promedio Acumulado de Ponderación Académica) por Jhoan Ramirez")
+st.title("Cálculo de PAPA (Promedio Acumulado de Ponderación Académica)")
 st.write("""
-Esta aplicación permite calcular el PAPA global y si afecta o no. 
+Esta aplicación permite calcular el PAPA global y por tipología. Puedes registrar asignaturas manualmente o cargar un archivo Excel con tus notas.
 """)
 
 # Inicialización del DataFrame en el estado de sesión
@@ -45,7 +45,26 @@ def descargar_plantilla():
         mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     )
 
-# Función para registrar asignaturas
+# Función para subir y cargar archivo Excel
+def cargar_plantilla():
+    archivo_subido = st.file_uploader("Sube tu archivo Excel con las notas", type=["xlsx"])
+    if archivo_subido:
+        try:
+            # Leer el archivo Excel subido
+            nuevo_df = pd.read_excel(archivo_subido)
+
+            # Verificar si las columnas requeridas están presentes
+            columnas_requeridas = ["Asignatura", "Calificación", "Créditos", "Tipología"]
+            if all(col in nuevo_df.columns for col in columnas_requeridas):
+                # Actualizar las asignaturas en el estado de sesión
+                st.session_state['asignaturas'] = pd.concat([st.session_state['asignaturas'], nuevo_df], ignore_index=True)
+                st.success("Archivo cargado y asignaturas registradas correctamente.")
+            else:
+                st.error(f"El archivo debe contener las columnas: {', '.join(columnas_requeridas)}")
+        except Exception as e:
+            st.error("Ocurrió un error al procesar el archivo. Por favor, verifica el formato.")
+
+# Función para registrar asignaturas manualmente
 def registrar_asignatura():
     # Campos de entrada
     asignatura = st.text_input("Nombre de la asignatura")
@@ -82,14 +101,16 @@ def mostrar_reportes():
     st.dataframe(papa_por_tipologia)
 
 # Menú lateral para elegir la funcionalidad
-opcion = st.sidebar.radio("Selecciona una opción", ["Registrar Asignaturas", "Ver Reportes", "Descargar Plantilla"])
+opcion = st.sidebar.radio("Selecciona una opción", ["Registrar Asignaturas", "Cargar Archivo", "Ver Reportes", "Descargar Plantilla"])
 
 # Lógica de la app
 if opcion == "Registrar Asignaturas":
     registrar_asignatura()
     mostrar_asignaturas()
+elif opcion == "Cargar Archivo":
+    cargar_plantilla()
+    mostrar_asignaturas()
 elif opcion == "Ver Reportes":
     mostrar_reportes()
 elif opcion == "Descargar Plantilla":
     descargar_plantilla()
-
