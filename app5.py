@@ -1,7 +1,7 @@
 import streamlit as st
 
 # Título y descripción de la app
-st.title("La Importancia de la Inteligencia Artificial para el Mundo")
+st.title("La Importancia de la Inteligencia Artificial para el Mundo; por chatGPT asistido por Jhoan Ramirez")
 st.write("""
     La Inteligencia Artificial (IA) es una de las tecnologías más transformadoras de nuestro tiempo. 
     Está afectando a múltiples sectores, desde la salud hasta la educación, pasando por el medio ambiente y la economía. 
