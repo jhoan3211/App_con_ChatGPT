@@ -18,8 +18,8 @@ def calcular_papa(df):
 # Título y descripción de la app
 st.title("Cálculo de PAPA (Promedio Acumulado de Ponderación Académica)")
 st.write("""
-Esta aplicación permite calcular el PAPA global y por tipología de asignatura. 
-Para cada asignatura, ingresa su calificación, los créditos y su tipología (teórica, práctica, etc.).
+Esta aplicación permite calcular el PAPA global y si afecta o no. 
+
 """)
 
 # Inicialización del DataFrame en el estado de sesión
@@ -32,7 +32,7 @@ def registrar_asignatura():
     asignatura = st.text_input("Nombre de la asignatura")
     calificacion = st.number_input("Calificación (0-10)", min_value=0.0, max_value=10.0, step=0.1)
     creditos = st.number_input("Créditos", min_value=1, step=1)
-    tipologia = st.selectbox("Tipología de asignatura", ["Afecta", "No afecta"])
+    tipologia = st.selectbox("Afecta el PAPA?", ["Si", "No"])
     
     if st.button("Registrar Asignatura"):
         # Registrar la asignatura en el DataFrame
