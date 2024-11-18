@@ -1,8 +1,13 @@
 import streamlit as st
 import pandas as pd
-from io import BytesIO
-import xlsxwriter
+from io import BytesIO  # Para manejar archivos en memoria
+from pandas.errors import EmptyDataError  # Para manejar errores en la carga de Excel
 
+# Verifica si `xlsxwriter` o `openpyxl` está disponible
+try:
+    import xlsxwriter  # Motor para escribir archivos Excel
+except ImportError:
+    st.error("Falta el paquete 'xlsxwriter'. Instálalo con 'pip install xlsxwriter'.")
 # Función para calcular el PAPA global y por tipología
 def calcular_papa(df):
     # PAPA Global
