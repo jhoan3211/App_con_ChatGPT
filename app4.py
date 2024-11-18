@@ -1,5 +1,6 @@
 import streamlit as st
 import pandas as pd
+from io import BytesIO
 
 # Función para calcular el PAPA global y por tipología
 def calcular_papa(df):
@@ -19,12 +20,30 @@ def calcular_papa(df):
 st.title("Cálculo de PAPA (Promedio Acumulado de Ponderación Académica) por Jhoan Ramirez")
 st.write("""
 Esta aplicación permite calcular el PAPA global y si afecta o no. 
-
 """)
 
 # Inicialización del DataFrame en el estado de sesión
 if 'asignaturas' not in st.session_state:
     st.session_state['asignaturas'] = pd.DataFrame(columns=["Asignatura", "Calificación", "Créditos", "Tipología"])
+
+# Función para descargar plantilla
+def descargar_plantilla():
+    # Crear un DataFrame vacío con las columnas esperadas
+    plantilla = pd.DataFrame(columns=["Asignatura", "Calificación", "Créditos", "Tipología"])
+
+    # Guardar el DataFrame en un buffer de bytes como archivo Excel
+    buffer = BytesIO()
+    with pd.ExcelWriter(buffer, engine='xlsxwriter') as writer:
+        plantilla.to_excel(writer, index=False, sheet_name='Plantilla')
+    buffer.seek(0)
+
+    # Proporcionar un enlace para descargar el archivo
+    st.download_button(
+        label="Descargar Plantilla Excel",
+        data=buffer,
+        file_name="plantilla_notas.xlsx",
+        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    )
 
 # Función para registrar asignaturas
 def registrar_asignatura():
@@ -63,7 +82,7 @@ def mostrar_reportes():
     st.dataframe(papa_por_tipologia)
 
 # Menú lateral para elegir la funcionalidad
-opcion = st.sidebar.radio("Selecciona una opción", ["Registrar Asignaturas", "Ver Reportes"])
+opcion = st.sidebar.radio("Selecciona una opción", ["Registrar Asignaturas", "Ver Reportes", "Descargar Plantilla"])
 
 # Lógica de la app
 if opcion == "Registrar Asignaturas":
@@ -71,3 +90,6 @@ if opcion == "Registrar Asignaturas":
     mostrar_asignaturas()
 elif opcion == "Ver Reportes":
     mostrar_reportes()
+elif opcion == "Descargar Plantilla":
+    descargar_plantilla()
+
