@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 from io import BytesIO
+import xlsxwriter
 
 # Función para calcular el PAPA global y por tipología
 def calcular_papa(df):
